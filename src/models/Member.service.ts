@@ -1,7 +1,6 @@
 import MemberModel from "../schema/Member.model";
-import { Member, MemberInput } from "../libs/types/member";
+import { LoginInput, Member, MemberInput } from "../libs/types/member";
 
-import { MemberType } from "../libs/enums/member.enum";
 import * as bcrypt from "bcryptjs";
 class MemberService {
   private readonly memberModel;
@@ -27,6 +26,21 @@ class MemberService {
       console.error("Error, model:signup", error);
       throw error;
     }
+  }
+
+  public async login(input: LoginInput): Promise<any> {
+    const member = await this.memberModel
+      .findOne({ memberNick: input.memberNick }, { memberPassword: 1 })
+      .exec();
+    if (!member) throw new Error("Parol yoki nickName no tugri");
+
+    const isMatch: boolean = await bcrypt.compare(
+      input.memberPassword,
+      member.memberPassword
+    );
+
+    if (!isMatch) throw new Error("Parol yoki nickName no tugri");
+    return await this.memberModel.findById(member._id).exec();
   }
 }
 

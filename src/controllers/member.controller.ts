@@ -1,7 +1,12 @@
 import { Request, Response } from "express";
 import { T } from "../libs/types/common";
 import MemberService from "../models/Member.service";
-import { Member, MemberInput } from "../libs/types/member";
+import {
+  AdminRequest,
+  LoginInput,
+  Member,
+  MemberInput,
+} from "../libs/types/member";
 
 // REACT
 
@@ -27,11 +32,20 @@ memberController.signup = async (req: Request, res: Response) => {
   }
 };
 
-memberController.login = async (req: Request, res: Response) => {
+memberController.login = async (req: AdminRequest, res: Response) => {
   try {
     console.log("login");
-  } catch (error) {
-    console.log("Error, login", error);
+    console.log(req.body);
+    const input: LoginInput = req.body,
+      result = await memberService.login(input);
+
+    req.session.member = result;
+    req.session.save(function () {
+      res.json({ member: result });
+    });
+  } catch (error: any) {
+    console.log(error.message);
+    res.status(500).send("err");
   }
 };
 
